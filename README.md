@@ -1,4 +1,4 @@
-# Historias-MCJ
+# Controle de atendimento na secretaria
 Repósitorio sobre um sistema de gerenciamento de atendimento na secretaria designado pela matéria de projeto e prática 2, alunos responsáveis pelo projeto:
 Caio Roberto, 
 João Vitor, 
