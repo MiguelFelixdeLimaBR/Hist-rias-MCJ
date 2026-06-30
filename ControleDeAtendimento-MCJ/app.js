@@ -3,6 +3,7 @@ const exphbs = require('express-handlebars');
 const sequelize = require('./config/bd');
 const app = express();
 const Discente = require('./models/discente.models');
+const Solicitacao = require('./models/solicitacao.models');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());  
@@ -97,6 +98,113 @@ app.delete('/discentedele/:id', async(req,res) =>{
     } catch (erro) {
       console.error('Erro ao deletar Discente:', erro);
       res.status(500).send('Erro ao deletar Discente');
+  }}
+);
+
+
+
+//CRUD Solicitações, responsável: Miguel Félix
+app.get('/discente/criaslc', async (req, res) => {
+    res.render('criarsolicitacoes');
+});
+app.post('/discente/criaslc', async (req, res) => {
+    const { discente, matricula, titulo, causa } = req.body;
+    await Solicitacao.create({ discente, matricula, titulo, causa });
+    res.redirect('/discente/listarslc');
+});
+
+app.get('/secretaria/listarslc', async (req, res) => {
+  try {
+    const soli = await Solicitacao.findAll({where: {resolvido: false}, raw: true});
+    res.render('listasolicitacoes', { soli });
+  } catch (erro) {
+    console.error('Erro ao listar solicitações:', erro);
+    res.status(500).send('Erro ao carregar solicitações');
+  }
+});
+app.put('/solicitacao/approve/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const slc = await Solicitacao.findByPk(id);
+    if (!slc) return res.status(404).send('Solicitação não encontrada');
+    slc.resolvido = true;
+    slc.status = 'Aprovada';
+    await slc.save();
+    res.redirect('/secretaria/listarslc');
+  } catch (erro) {
+    console.error('Erro ao aprovar solicitação:', erro);
+    res.status(500).send('Erro ao aprovar solicitação');
+  }
+});
+
+app.put('/solicitacao/reject/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const slc = await Solicitacao.findByPk(id);
+    if (!slc) return res.status(404).send('Solicitação não encontrada');
+    slc.resolvido = true;
+    slc.status = 'Rejeitada';
+    await slc.save();
+    res.redirect('/secretaria/listarslc');
+  } catch (erro) {
+    console.error('Erro ao rejeitar solicitação:', erro);
+    res.status(500).send('Erro ao rejeitar solicitação');
+  }
+});
+app.get('/discente/listarslc', async (req, res) => {
+  try {
+    const soli = await Solicitacao.findAll({raw: true});
+    res.render('listasolicitacoes2', { soli });
+  } catch (erro) {
+    console.error('Erro ao listar solicitações:', erro);
+    res.status(500).send('Erro ao carregar solicitações');
+  }
+});
+
+app.get('/slcedit/:id', async (req, res) =>{
+      try {
+        const id = req.params.id;
+        const slc = await Solicitacao.findByPk(id, {raw:true});
+
+        res.render('editarsolicitacao', { slc });
+    } catch (erro) {
+        console.error('Erro ao editar solicitacao:', erro);
+        res.status(500).send('Erro ao editar solicitacao');
+    }
+});
+app.put(
+    '/slcedit/:id', async(req, res) => {
+      try {
+        const id = req.params.id;
+        const discente = req.body.discente;
+        const matricula = req.body.matricula;
+        const titulo = req.body.titulo;
+        const causa = req.body.causa;
+
+        const slc = await Solicitacao.findByPk(id);
+
+        slc.discente = discente;
+        slc.titulo = titulo;
+        slc.matricula = matricula;
+        slc.causa = causa;
+        await slc.save();
+
+        res.redirect('/discente/listarslc');
+    } catch (erro) {
+        console.error('Erro ao editar solicitacao:', erro);
+        res.status(500).send('Erro ao atualizar a solicitação!');
+    }}
+);
+
+app.delete('/solitedele/:id', async(req,res) =>{
+  try {
+    const id = req.params.id;
+    const soli = await Solicitacao.findByPk(id);
+    soli.destroy()
+    res.redirect('/discente/listarslc')
+    } catch (erro) {
+      console.error('Erro ao deletar solicitacao:', erro);
+      res.status(500).send('Erro ao deletar solicitacao');
   }}
 );
 
