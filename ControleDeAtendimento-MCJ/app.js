@@ -2,13 +2,24 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const sequelize = require('./config/bd');
 const app = express();
+const { Op } = require('sequelize');
 const Discente = require('./models/discente.models');
 const Solicitacao = require('./models/solicitacao.models');
+const Duvidas = require('./models/duvidas.models');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());  
 
-app.engine('handlebars', exphbs.engine({defaultLayout: false}));
+app.engine('handlebars', exphbs.engine({
+  defaultLayout: false,
+  helpers: {
+    if_eq: function (a, b, opts) {
+      return String(a).toLowerCase() === String(b).toLowerCase()
+        ? opts.fn(this)
+        : opts.inverse(this);
+    }
+  }
+}));
 app.set('view engine', 'handlebars');
 
 const methodOverride = require('method-override');
@@ -207,6 +218,120 @@ app.delete('/solitedele/:id', async(req,res) =>{
       res.status(500).send('Erro ao deletar solicitacao');
   }}
 );
+
+
+
+//CRUD Dúvidas, responsável: João Vitor
+app.get('/discente/criarduvida', async (req, res) => {
+    res.render('cadastrarduvidas');
+});
+app.post('/discente/criarduvida', async (req, res) => {
+    const { nome, duvida } = req.body;
+    await Duvidas.create({ nome, duvida });
+    res.redirect('/discente/listarduvidas2');
+});
+
+app.get('/discente/listarduvidas2', async (req, res) => {
+  try {
+    const duvidas = await Duvidas.findAll({raw: true});
+    res.render('listarduvidas2', { duvidas });
+  } catch (erro) {
+    console.error('Erro ao listar dúvidas:', erro);
+    res.status(500).send('Erro ao carregar dúvidas');
+  }}
+);
+app.get('/secretaria/listarduvidas', async (req, res) => {
+  try {
+    const duvidas = await Duvidas.findAll({
+      where: {
+        status: {
+          [Op.or]: ['pendente', 'Pendente']
+        }},
+      raw: true
+    });
+    res.render('listarduvidas', { duvidas });
+  } catch (erro) {
+    console.error('Erro ao listar dúvidas:', erro);
+    res.status(500).send('Erro ao carregar dúvidas');
+  }
+});
+
+app.get('/duvidaedit/:id', async (req, res) =>{
+      try {
+        const id = req.params.id;
+        const dvd = await Duvidas.findByPk(id, {raw:true});
+
+        res.render('editarduvida', { dvd });
+    } catch (erro) {
+        console.error('Erro ao editar dúvida:', erro);
+        res.status(500).send('Erro ao editar dúvida');
+    }
+});
+app.put(
+    '/duvidaedit/:id', async(req, res) => {
+      try {
+        const id = req.params.id;
+        const nome = req.body.nome;
+        const duvida = req.body.duvida;
+
+        const dvd = await Duvidas.findByPk(id);
+        if (!dvd) return res.status(404).send('Dúvida não encontrada');
+
+        dvd.nome = nome;
+        dvd.duvida = duvida;
+        await dvd.save();
+
+        res.redirect('/discente/listarduvidas2');
+    } catch (erro) {
+        console.error('Erro ao editar dúvida:', erro);
+        res.status(500).send('Erro ao atualizar a dúvida!');
+    }}
+);
+
+app.delete('/duvidadele/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const dv = await Duvidas.findByPk(id);
+    if (!dv) return res.status(404).send('Dúvida não encontrada');
+    await dv.destroy();
+    res.redirect('/discente/listarduvidas2');
+  } catch (erro) {
+    console.error('Erro ao deletar a dúvida:', erro);
+    res.status(500).send('Erro ao deletar a dúvida');
+  }
+});
+
+app.get('/secretaria/reponderduvidas/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const rsp = await Duvidas.findByPk(id, { raw: true });
+
+    res.render('respostaduvida', { rsp });
+  } catch (erro) {
+    console.error('Erro ao editar dúvida:', erro);
+    res.status(500).send('Erro ao editar dúvida');
+  }
+});
+
+app.put('/secretaria/reponderduvidas/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const resposta = req.body.resposta;
+    const status = req.body.status;
+
+    const rsp = await Duvidas.findByPk(id);
+    if (!rsp) return res.status(404).send('Dúvida não encontrada');
+
+    rsp.resposta = resposta;
+    rsp.status = status;
+    await rsp.save();
+
+    res.redirect('/secretaria/listarduvidas');
+  } catch (erro) {
+    console.error('Erro ao enviar resposta:', erro);
+    res.status(500).send('Erro ao enviar resposta!');
+  }
+});
 
 async function conectarBD() {
   try {
