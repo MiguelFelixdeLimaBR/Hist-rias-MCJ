@@ -93,7 +93,7 @@ app.put(
         discente.curso = curso;
         await discente.save();
 
-        res.render('editardiscente', { discente });
+        res.redirect('/listardiscentes');
     } catch (erro) {
         console.error('Erro ao atualizar Discente:', erro);
         res.status(500).send('Erro ao atualizar Discente');
