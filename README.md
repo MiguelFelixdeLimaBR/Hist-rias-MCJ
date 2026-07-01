@@ -3,6 +3,6 @@ Repósitorio sobre um sistema de controle de atendimento na secretaria, designad
 com o objetivo de gerenciar melhor as demandas que chegam na secretaria, 
 alunos responsáveis pelo projeto: 
 <br>
-Caio Roberto, <br>
-João Vitor, <br>
-Miguel Felix.
+**Caio Roberto**, <br>
+**João Vitor**, <br>
+**Miguel Felix**.
