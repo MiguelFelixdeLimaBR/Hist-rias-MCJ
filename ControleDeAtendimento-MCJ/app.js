@@ -7,11 +7,12 @@ const Discente = require('./models/discente.models');
 const Solicitacao = require('./models/solicitacao.models');
 const Duvidas = require('./models/duvidas.models');
 
+app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());  
 
 app.engine('handlebars', exphbs.engine({
-  defaultLayout: false,
+  defaultLayout: 'main',
   helpers: {
     if_eq: function (a, b, opts) {
       return String(a).toLowerCase() === String(b).toLowerCase()
@@ -26,20 +27,20 @@ const methodOverride = require('method-override');
 app.use(methodOverride('_method'));
 
 app.get('/', (req, res) => {
-    res.render('home');
+  res.render('home', { pageTitle: 'Sistema de controle de atendimento na secretaria' });
 });
 
 app.get('/discente', (req, res) => {
-    res.render('discente');
+  res.render('discente', { pageTitle: 'Página de Discente' });
 });
 
 app.get('/secretaria', (req, res) => {
-    res.render('secretaria');
+  res.render('secretaria', { pageTitle: 'Página da Secretaria' });
 });
 
 // CRUD Discentes, responsável: Caio Roberto
 app.get('/discente/create', async (req, res) => {
-    res.render('cadastrardiscente');
+  res.render('cadastrardiscente', { pageTitle: 'Cadastrar Discente' });
 });
 app.post('/discente/create', async (req, res) => {
    try{
@@ -55,7 +56,7 @@ app.post('/discente/create', async (req, res) => {
 app.get('/listardiscentes', async (req, res) => {
   try {
     const discente = await Discente.findAll({raw: true});
-    res.render('listardiscentes', { discente });
+    res.render('listardiscentes', { discente, pageTitle: 'Lista de discentes cadastrados' });
   } catch (erro) {
     console.error('Erro ao listar Discentes:', erro);
     res.status(500).send('Erro ao carregar Discentes');
@@ -68,7 +69,7 @@ app.get(
         const id = req.params.id;
         const discente = await Discente.findByPk(id, {raw:true});
 
-        res.render('editardiscente', { discente });
+        res.render('editardiscente', { discente, pageTitle: 'Editar Discente' });
     } catch (erro) {
         console.error('Erro ao atualizar Discente:', erro);
         res.status(500).send('Erro ao atualizar Discente');
@@ -116,7 +117,7 @@ app.delete('/discentedele/:id', async(req,res) =>{
 
 //CRUD Solicitações, responsável: Miguel Félix
 app.get('/discente/criaslc', async (req, res) => {
-    res.render('criarsolicitacoes');
+  res.render('criarsolicitacoes', { pageTitle: 'Criar solicitações' });
 });
 app.post('/discente/criaslc', async (req, res) => {
     const { discente, matricula, titulo, causa } = req.body;
@@ -127,7 +128,7 @@ app.post('/discente/criaslc', async (req, res) => {
 app.get('/secretaria/listarslc', async (req, res) => {
   try {
     const soli = await Solicitacao.findAll({where: {resolvido: false}, raw: true});
-    res.render('listasolicitacoes', { soli });
+    res.render('listasolicitacoes', { soli, pageTitle: 'Lista de solicitações pendentes' });
   } catch (erro) {
     console.error('Erro ao listar solicitações:', erro);
     res.status(500).send('Erro ao carregar solicitações');
@@ -165,7 +166,7 @@ app.put('/solicitacao/reject/:id', async (req, res) => {
 app.get('/discente/listarslc', async (req, res) => {
   try {
     const soli = await Solicitacao.findAll({raw: true});
-    res.render('listasolicitacoes2', { soli });
+    res.render('listasolicitacoes2', { soli, pageTitle: 'Lista de solicitações' });
   } catch (erro) {
     console.error('Erro ao listar solicitações:', erro);
     res.status(500).send('Erro ao carregar solicitações');
@@ -177,7 +178,7 @@ app.get('/slcedit/:id', async (req, res) =>{
         const id = req.params.id;
         const slc = await Solicitacao.findByPk(id, {raw:true});
 
-        res.render('editarsolicitacao', { slc });
+        res.render('editarsolicitacao', { slc, pageTitle: 'Editar Solicitação' });
     } catch (erro) {
         console.error('Erro ao editar solicitacao:', erro);
         res.status(500).send('Erro ao editar solicitacao');
@@ -223,7 +224,7 @@ app.delete('/solitedele/:id', async(req,res) =>{
 
 //CRUD Dúvidas, responsável: João Vitor
 app.get('/discente/criarduvida', async (req, res) => {
-    res.render('cadastrarduvidas');
+  res.render('cadastrarduvidas', { pageTitle: 'Enviar dúvidas' });
 });
 app.post('/discente/criarduvida', async (req, res) => {
     const { nome, duvida } = req.body;
@@ -234,7 +235,7 @@ app.post('/discente/criarduvida', async (req, res) => {
 app.get('/discente/listarduvidas2', async (req, res) => {
   try {
     const duvidas = await Duvidas.findAll({raw: true});
-    res.render('listarduvidas2', { duvidas });
+    res.render('listarduvidas2', { duvidas, pageTitle: 'Minhas dúvidas' });
   } catch (erro) {
     console.error('Erro ao listar dúvidas:', erro);
     res.status(500).send('Erro ao carregar dúvidas');
@@ -249,7 +250,7 @@ app.get('/secretaria/listarduvidas', async (req, res) => {
         }},
       raw: true
     });
-    res.render('listarduvidas', { duvidas });
+    res.render('listarduvidas', { duvidas, pageTitle: 'Lista de dúvidas pendentes' });
   } catch (erro) {
     console.error('Erro ao listar dúvidas:', erro);
     res.status(500).send('Erro ao carregar dúvidas');
@@ -261,7 +262,7 @@ app.get('/duvidaedit/:id', async (req, res) =>{
         const id = req.params.id;
         const dvd = await Duvidas.findByPk(id, {raw:true});
 
-        res.render('editarduvida', { dvd });
+        res.render('editarduvida', { dvd, pageTitle: 'Edição de dúvidas' });
     } catch (erro) {
         console.error('Erro ao editar dúvida:', erro);
         res.status(500).send('Erro ao editar dúvida');
@@ -306,7 +307,7 @@ app.get('/secretaria/reponderduvidas/:id', async (req, res) => {
     const id = req.params.id;
     const rsp = await Duvidas.findByPk(id, { raw: true });
 
-    res.render('respostaduvida', { rsp });
+    res.render('respostaduvida', { rsp, pageTitle: 'Responder dúvida' });
   } catch (erro) {
     console.error('Erro ao editar dúvida:', erro);
     res.status(500).send('Erro ao editar dúvida');

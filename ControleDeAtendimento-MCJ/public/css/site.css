@@ -1,0 +1,91 @@
+body {
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 56rem;
+    margin-inline: auto;
+    padding-block: 2rem;
+}
+
+.button-group,
+.actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.button-group :is(button, [role="button"]),
+.actions :is(button, [role="button"]) {
+    width: auto;
+    margin: 0;
+}
+
+.actions form {
+    margin: 0;
+    width: auto;
+}
+
+.form-page,
+.menu-page {
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.form-page > form {
+    width: min(100%, 38rem);
+    text-align: left;
+}
+
+.form-page :is(input, textarea, select) {
+    border: 1px solid #68737d;
+}
+
+@media (prefers-color-scheme: dark) {
+    .form-page :is(input, textarea, select) {
+        border-color: #858f9a;
+    }
+}
+
+.form-page > form button {
+    display: block;
+    width: auto;
+    margin-inline: auto;
+}
+
+.list {
+    padding: 0;
+    list-style: none;
+}
+
+.list-item {
+    padding-block: 1rem;
+    border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+}
+
+.list-item > div:not(.actions) {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.75rem;
+}
+
+.link {
+    display: inline-block;
+    margin-top: 1rem;
+}
+
+@media (max-width: 40rem) {
+    .container {
+        padding-inline: 0.75rem;
+    }
+
+    .button-group :is(button, [role="button"]) {
+        width: 100%;
+    }
+}
